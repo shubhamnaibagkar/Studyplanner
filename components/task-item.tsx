@@ -4,7 +4,7 @@ import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Progress } from "@/components/ui/progress"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Trash2, Calendar } from "lucide-react"
+import { Trash2, Calendar, Paperclip, StickyNote } from "lucide-react"
 import { EditTaskDialog } from "@/components/edit-task-dialog"
 import type { Task } from "@/lib/types"
 
@@ -75,6 +75,19 @@ export function TaskItem({ task, onUpdate, onDelete }: TaskItemProps) {
               })}
               {isOverdue && " (Overdue)"}
             </span>
+            {task.notes && (
+              <>
+                <span>•</span>
+                <StickyNote className="h-3 w-3" />
+              </>
+            )}
+            {task.attachments && task.attachments.length > 0 && (
+              <>
+                <span>•</span>
+                <Paperclip className="h-3 w-3" />
+                <span>{task.attachments.length}</span>
+              </>
+            )}
           </div>
 
           <div className="space-y-1">

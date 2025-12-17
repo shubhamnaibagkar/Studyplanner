@@ -6,8 +6,10 @@ import { SubjectCard } from "@/components/subject-card"
 import { AddSubjectDialog } from "@/components/add-subject-dialog"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Plus, BookOpen, Calendar } from "lucide-react"
-import type { Subject, Task } from "@/lib/types"
+import { Plus, BookOpen, Calendar, BarChart3 } from "lucide-react"
+import type { Subject, Task, StudySession } from "@/lib/types"
+import { AnalyticsDashboard } from "@/components/analytics-dashboard"
+import { format } from "date-fns"
 
 export default function Home() {
   const [subjects, setSubjects] = useState<Subject[]>([
@@ -15,6 +17,10 @@ export default function Home() {
       id: "1",
       name: "Computer Science",
       color: "bg-chart-2",
+      studySessions: [
+        { id: "s1", subjectId: "1", date: format(new Date(), "yyyy-MM-dd"), duration: 120 },
+        { id: "s2", subjectId: "1", date: format(new Date(Date.now() - 86400000), "yyyy-MM-dd"), duration: 90 },
+      ],
       tasks: [
         { id: "1", type: "test", name: "Midterm Exam", deadline: "2025-01-15", completed: false, progress: 60 },
         {
@@ -32,6 +38,7 @@ export default function Home() {
       id: "2",
       name: "Mathematics",
       color: "bg-chart-1",
+      studySessions: [{ id: "s3", subjectId: "2", date: format(new Date(), "yyyy-MM-dd"), duration: 60 }],
       tasks: [
         { id: "4", type: "test", name: "Calculus Quiz", deadline: "2025-01-18", completed: false, progress: 30 },
         { id: "5", type: "homework", name: "Problem Set 5", deadline: "2025-01-08", completed: false, progress: 70 },
@@ -47,6 +54,7 @@ export default function Home() {
       name,
       color,
       tasks: [],
+      studySessions: [],
     }
     setSubjects([...subjects, newSubject])
   }
@@ -97,6 +105,40 @@ export default function Home() {
     setSubjects(subjects.filter((subject) => subject.id !== subjectId))
   }
 
+  const addStudySession = (subjectId: string, duration: number) => {
+    const newSession: StudySession = {
+      id: Date.now().toString(),
+      subjectId,
+      date: format(new Date(), "yyyy-MM-dd"),
+      duration,
+    }
+    setSubjects(
+      subjects.map((subject) => {
+        if (subject.id === subjectId) {
+          return {
+            ...subject,
+            studySessions: [...subject.studySessions, newSession],
+          }
+        }
+        return subject
+      }),
+    )
+  }
+
+  const updateSubjectNotes = (subjectId: string, notes: string) => {
+    setSubjects(
+      subjects.map((subject) => {
+        if (subject.id === subjectId) {
+          return {
+            ...subject,
+            notes,
+          }
+        }
+        return subject
+      }),
+    )
+  }
+
   const allTasks = subjects.flatMap((subject) => subject.tasks.map((task) => ({ ...task, subject })))
 
   return (
@@ -119,6 +161,10 @@ export default function Home() {
               <TabsTrigger value="calendar" className="gap-2">
                 <Calendar className="h-4 w-4" />
                 Calendar
+              </TabsTrigger>
+              <TabsTrigger value="analytics" className="gap-2">
+                <BarChart3 className="h-4 w-4" />
+                Analytics
               </TabsTrigger>
             </TabsList>
 
@@ -155,6 +201,8 @@ export default function Home() {
                     onUpdateTask={(taskId, updates) => updateTask(subject.id, taskId, updates)}
                     onDeleteTask={(taskId) => deleteTask(subject.id, taskId)}
                     onDeleteSubject={() => deleteSubject(subject.id)}
+                    onAddStudySession={(duration) => addStudySession(subject.id, duration)}
+                    onUpdateNotes={(notes) => updateSubjectNotes(subject.id, notes)}
                   />
                 ))}
               </div>
@@ -163,6 +211,10 @@ export default function Home() {
 
           <TabsContent value="calendar">
             <CalendarView tasks={allTasks} />
+          </TabsContent>
+
+          <TabsContent value="analytics">
+            <AnalyticsDashboard subjects={subjects} />
           </TabsContent>
         </Tabs>
       </div>

@@ -17,6 +17,9 @@ import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Slider } from "@/components/ui/slider"
 import type { Task } from "@/lib/types"
+import { Textarea } from "@/components/ui/textarea"
+import { TaskAttachmentsDialog } from "@/components/task-attachments-dialog"
+import { Paperclip } from "lucide-react"
 
 interface EditTaskDialogProps {
   children: React.ReactNode
@@ -30,6 +33,8 @@ export function EditTaskDialog({ children, task, onUpdate }: EditTaskDialogProps
   const [type, setType] = useState(task.type)
   const [deadline, setDeadline] = useState(task.deadline)
   const [progress, setProgress] = useState([task.progress])
+  const [notes, setNotes] = useState(task.notes || "")
+  const [attachments, setAttachments] = useState(task.attachments || [])
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -39,6 +44,8 @@ export function EditTaskDialog({ children, task, onUpdate }: EditTaskDialogProps
         type,
         deadline,
         progress: progress[0],
+        notes: notes.trim() || undefined,
+        attachments: attachments.length > 0 ? attachments : undefined,
       })
       setOpen(false)
     }
@@ -47,7 +54,7 @@ export function EditTaskDialog({ children, task, onUpdate }: EditTaskDialogProps
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl">
         <DialogHeader>
           <DialogTitle>Edit Task</DialogTitle>
           <DialogDescription>Update task details and progress</DialogDescription>
@@ -87,6 +94,27 @@ export function EditTaskDialog({ children, task, onUpdate }: EditTaskDialogProps
               step={5}
               className="py-4"
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="edit-notes">Notes</Label>
+            <Textarea
+              id="edit-notes"
+              value={notes}
+              onChange={(e) => setNotes(e.target.value)}
+              placeholder="Add task notes, reminders, or important details..."
+              className="min-h-[80px]"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label>Attachments</Label>
+            <TaskAttachmentsDialog taskName={task.name} attachments={attachments} onSave={setAttachments}>
+              <Button type="button" variant="outline" className="w-full gap-2 bg-transparent">
+                <Paperclip className="h-4 w-4" />
+                Manage Attachments ({attachments.length})
+              </Button>
+            </TaskAttachmentsDialog>
           </div>
 
           <div className="flex justify-end gap-2 pt-4">
